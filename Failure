@@ -1,0 +1,148 @@
+import pygame
+pygame.init()
+
+screen = pygame.display.set_mode((800, 800))
+pygame.display.set_caption("Space Invaders..")
+clock = pygame.time.Clock()
+gameover = False
+
+shoot = False
+timer = 0;
+
+class Alien:
+    def __init__(self, xpos, ypos):
+        self.xpos = xpos
+        self.ypos = ypos
+        self.isAlive = True
+        self.direction = 1
+    def move(self, time):
+        if timer % 800 == 0: #side-to-side
+            self.ypos += 50
+            self.direction *= -1
+            return 0
+        if timer%100==0: #Down
+            self.xpos+=50*self.direction
+            print("Right")
+    def collide(self, BulletX, BulletY):
+        if self.isAlive:
+            if BulletX > self.xpos:
+                if BulletX < self.xpos + 40:
+                    if BulletY < self.ypos + 40:
+                        if BulletY > self.ypos:
+                            print("Hit!")
+                            self.isAlive = False
+                            return False
+        return True
+    def draw(self):
+            pygame.draw.rect(screen, (250, 250, 250), (self.xpos, self.ypos, 40, 40))
+
+class Bullet:
+    def __init__(self, xpos, ypos):
+        self.xpos = xpos
+        self.ypos = ypos
+        self.isAlive = False
+        
+    def move(self, xpos, ypos):
+        if self.isAlive == True:
+            self.ypos-=15
+        if self.ypos < 0:
+            self.isAlive = False
+            self.xpos = xpos
+            self.ypos = ypos
+
+    def draw(self):
+        pygame.draw.rect(screen, (200, 200, 200), (self.xpos, self.ypos, 3, 20))
+
+armada = []
+for i in range (5):
+    for j in range (10):
+        armada.append(Alien(j*60+50, i*50+50))
+
+
+xpos = 400
+ypos = 750
+moveLeft = False
+moveRight = False
+
+A1 = Alien(400, 400)
+bullet = Bullet(xpos, ypos)
+
+
+
+while not gameover:
+    clock.tick(40)
+    timer+=1 
+
+#i
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            gameover = True
+            
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                moveLeft = True
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_LEFT:
+                moveLeft = False
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RIGHT:
+                moveRight = True
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_RIGHT:
+                moveRight = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                shoot = True
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_UP:
+                shoot = False
+                
+    if moveLeft == True:
+        vx =- 3
+    elif moveRight == True:
+        vx =+ 3
+    else:
+        vx = 0
+
+    xpos += vx
+    
+    if shoot == True:
+        bullet.isAlive = True
+
+    if bullet.isAlive == True:
+        bullet.move(xpos+20, ypos)
+        if bullet.isAlive == True:
+            for i in range(len(armada)):
+                bullet.isAlive = armada[i].collide(bullet.xpos, bullet.ypos)
+                if bullet.isAlive == False:
+                    break
+
+        
+    else:
+        bullet.xpos = xpos + 20
+        bullet.ypos = ypos
+    
+    for i in range (len(armada)):
+        armada[i].move(timer)
+    #r
+    
+    screen.fill((0, 0, 0))
+    
+    
+    pygame.draw.rect(screen, (0, 255, 0), (xpos-30, ypos, 100, 20), 15)
+
+    for i in range (len(armada)):
+        armada[i].draw()
+  
+    bullet.draw()
+    
+    pygame.draw.rect(screen, (0, 255, 0), (xpos-30, ypos, 100, 20), 15)
+
+    
+    pygame.display.flip()
+    
+#e
+pygame.quit()
+
+
